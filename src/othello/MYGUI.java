@@ -2,6 +2,7 @@ package othello;
 
 import javax.swing.*;
 
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -9,15 +10,19 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.event.*;
+import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
-
+import java.lang.*;
+import java.awt.geom.Ellipse2D;
 /**
  * The GUI of the project.
  */
@@ -33,16 +38,19 @@ class GPanel extends JPanel implements MouseListener {
 	private ArrayList<Move> hintmoves;
 
 	private static boolean playerplayed=false ;
- 
+
 	public GPanel (Othello board, JLabel score_black, JLabel score_white) {
 
-		
+
 		super();
+//		score_black.setOpaque(true);
+//		score_white.setOpaque(true);
+//		score_black.setBackground(Color.red);
 		this.board = board;
 		this.score_black = score_black;
 		this.score_white = score_white;
 		addMouseListener(this);
-		setBackground(Color.cyan);
+		setBackground( new Color(0x25, 0xa3, 0x6f));
 		repaint();
 		hintmoves= new ArrayList();
 
@@ -59,7 +67,7 @@ class GPanel extends JPanel implements MouseListener {
 
 
 	}
-	
+
 	//The depth the user,chooses
 	public static void SetGameDepth()
 	{
@@ -73,21 +81,21 @@ class GPanel extends JPanel implements MouseListener {
 			JOptionPane.showMessageDialog(null, "Number should be given.\nProgram will exit!");
 			System.exit(0);
 		}
-		
+
 		if(depth<=0)
 		{
 			JOptionPane.showMessageDialog(null, "Number should be >0.\nProgram will exit!");
 			System.exit(0);
 		}
-		
-		
-		
-		
-		
+
+
+
+
+
 	}
 
 
-	
+
 	public static void askTurn()
 	{
 
@@ -114,10 +122,17 @@ class GPanel extends JPanel implements MouseListener {
 	public void pcturn() {
 
 		board.ComputeScor();
-    	score_black.setText("Black : "+Integer.toString(board.getCounter(1)));
-		score_white.setText("White : "+Integer.toString(board.getCounter(0)));
 		
 		
+		if(board.getCounter(1) > board.getCounter(0))
+		{
+			score_black.setText("Black : "+Integer.toString(board.getCounter(1))+" \u2666");
+			score_white.setText("White : "+Integer.toString(board.getCounter(0))+" ");
+		}else if(board.getCounter(1) < board.getCounter(0)){
+			score_white.setText("White : "+Integer.toString(board.getCounter(0))+" \u2666 ");
+			score_black.setText("Black : "+Integer.toString(board.getCounter(1)));
+		}
+
 		if(board.isTerminal())
 		{
 			showWinner();
@@ -127,24 +142,24 @@ class GPanel extends JPanel implements MouseListener {
 		else if (board.possibleMoves(PCbutton).size()==0 && board.possibleMoves(playerButton).size()!=0) {
 			JOptionPane.showMessageDialog(null, "Computer does not have any moves its your turn again!","Reversi",JOptionPane.INFORMATION_MESSAGE);
 			counter++;
-			
+
 		}
 		else
 		{
-			
-			try {
-				
 
-			Move bestMove = computer.MiniMax(board);
-			board.set(bestMove.getRow(), bestMove.getCol(), counter++);
-			
+			try {
+
+
+				Move bestMove = computer.MiniMax(board);
+				board.set(bestMove.getRow(), bestMove.getCol(), counter++);
+
 
 			}
 			catch(Exception e)
 			{
-				
+
 			}
-			
+
 			if (board.isTerminal()) 
 			{
 
@@ -153,13 +168,13 @@ class GPanel extends JPanel implements MouseListener {
 			//If the player doesn't have a move the AI plays again
 			else if (board.possibleMoves(playerButton).size()==0 && board.possibleMoves(PCbutton).size()!=0) {
 				repaint();
-				
+
 				JOptionPane.showMessageDialog(null, "You do not have any moves its computer's turn again!","Reversi",JOptionPane.INFORMATION_MESSAGE);
 				counter++;
-				
+
 				javax.swing.SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
-					
+
 						pcturn();
 						repaint();
 					}
@@ -167,19 +182,25 @@ class GPanel extends JPanel implements MouseListener {
 
 
 			}
-			
-		}	
-	
-		
-		board.ComputeScor();
-		score_black.setText("Black : "+Integer.toString(board.getCounter(1)));
-		score_white.setText("White : "+Integer.toString(board.getCounter(0)));
 
-	
+		}	
+
+
+		board.ComputeScor();
+
+		if(board.getCounter(1) > board.getCounter(0))
+		{
+			score_black.setText("Black : "+Integer.toString(board.getCounter(1))+" \u2666");
+			score_white.setText("White : "+Integer.toString(board.getCounter(0))+" ");
+		}else if(board.getCounter(1) < board.getCounter(0)){
+			score_white.setText("White : "+Integer.toString(board.getCounter(0))+" \u2666 ");
+			score_black.setText("Black : "+Integer.toString(board.getCounter(1)));
+		}
+
 	}
-	
-	
-	
+
+
+
 
 
 	//Calculates the pieces count
@@ -194,10 +215,16 @@ class GPanel extends JPanel implements MouseListener {
 	{
 		repaint();
 		board.ComputeScor();
-    	score_black.setText("Black : "+Integer.toString(board.getCounter(1)));
-		score_white.setText("White : "+Integer.toString(board.getCounter(0)));
-		
-		
+
+		if(board.getCounter(1) > board.getCounter(0))
+		{
+			score_black.setText("Black : "+Integer.toString(board.getCounter(1))+" \u2666");
+			score_white.setText("White : "+Integer.toString(board.getCounter(0))+" ");
+		}else if(board.getCounter(1) < board.getCounter(0)){
+			score_white.setText("White : "+Integer.toString(board.getCounter(0))+" \u2666 ");
+			score_black.setText("Black : "+Integer.toString(board.getCounter(1)));
+		}
+
 		if(board.getCounter(0)>board.getCounter(1))
 		{
 			score=discDiff(0,1);
@@ -238,7 +265,7 @@ class GPanel extends JPanel implements MouseListener {
 
 	}
 
-	
+
 	//Clearing the board,for the game to start again
 	public void clear() {
 		counter=0;
@@ -257,27 +284,39 @@ class GPanel extends JPanel implements MouseListener {
 	}
 
 	public void drawPanel(Graphics g) {
+
+
+		Graphics2D g2D = (Graphics2D) g;      
+		
+		//better quality 
+		g2D.setRenderingHint( RenderingHints.  KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g2D.setRenderingHint( RenderingHints.  KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+		g2D.setRenderingHint( RenderingHints.  KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+
 		//Drawing the rectangles of the board
 		for (int i = 1 ; i < 8 ; i++) {
-			g.drawLine(i * MYGUI.Square_Length, 0, i * MYGUI.Square_Length, MYGUI.Height);
+			g2D.drawLine(i * MYGUI.Square_Length, 0, i * MYGUI.Square_Length, MYGUI.Height);
 		}
-		g.drawLine(MYGUI.Width, 0, MYGUI.Width, MYGUI.Height);
+		g2D.drawLine(MYGUI.Width, 0, MYGUI.Width, MYGUI.Height);
 		for (int i = 1 ; i < 8 ; i++) {
-			g.drawLine(0, i * MYGUI.Square_Length, MYGUI.Width, i * MYGUI.Square_Length);
+			g2D.drawLine(0, i * MYGUI.Square_Length, MYGUI.Width, i * MYGUI.Square_Length);
 		}
-		g.drawLine(0, MYGUI.Height, MYGUI.Width, MYGUI.Height);
+		g2D.drawLine(0, MYGUI.Height, MYGUI.Width, MYGUI.Height);
 
 		//The buttons
 		for (int i = 0 ; i < 8 ; i++)
 			for (int j = 0 ; j < 8 ; j++)
 				switch (board.get(i,j)) {
 				case -1:  
-					g.setColor(Color.white);
-					g.fillOval(1 + j * MYGUI.Square_Length, 1 + i * MYGUI.Square_Length,MYGUI.Square_Length-1, MYGUI.Square_Length-1);
+					g2D.setColor(Color.white);
+
+					g2D.fill(new Ellipse2D.Double(1 + j * MYGUI.Square_Length, 1 + i * MYGUI.Square_Length,MYGUI.Square_Length-1, MYGUI.Square_Length-1));
+
+					
 					break;
 				case 1:  
-					g.setColor(Color.black);
-					g.fillOval(1 + j * MYGUI.Square_Length, 1 + i * MYGUI.Square_Length, MYGUI.Square_Length-1, MYGUI.Square_Length-1);
+					g2D.setColor(Color.black);
+					g2D.fill(new Ellipse2D.Double(1 + j * MYGUI.Square_Length, 1 + i * MYGUI.Square_Length,MYGUI.Square_Length-1, MYGUI.Square_Length-1));
 					break;
 
 				}
@@ -289,8 +328,8 @@ class GPanel extends JPanel implements MouseListener {
 			for(int i =0;i<hintmoves.size();i++)
 			{
 
-				g.setColor(Color.darkGray);
-				g.drawOval(hintmoves.get(i).getCol() *MYGUI.Square_Length+3, hintmoves.get(i).getRow() *MYGUI.Square_Length+3, MYGUI.Square_Length-6, MYGUI.Square_Length-6);
+				g2D.setColor(Color.yellow);
+				g2D.drawOval(hintmoves.get(i).getCol() *MYGUI.Square_Length+3, hintmoves.get(i).getRow() *MYGUI.Square_Length+3, MYGUI.Square_Length-6, MYGUI.Square_Length-6);
 				hintmoves.remove(i);  
 
 			}
@@ -307,18 +346,19 @@ class GPanel extends JPanel implements MouseListener {
 	public static int getcounter(){
 		return counter;
 	}
-	
+
 	public static int getPC(){
 		return PCbutton;
 	}
-	
+
 	public static void  setCounter(int count){
 		counter=count;
 	}
-	
+
 
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
+
 
 		drawPanel(g);
 
@@ -328,36 +368,36 @@ class GPanel extends JPanel implements MouseListener {
 	public Dimension getPreferredSize() {
 		return new Dimension(MYGUI.Width,MYGUI.Height);
 	}
-  
-  
-	public void mouseClicked(MouseEvent e) {
-		
-		
+
+
+	public void mousePressed(MouseEvent e) {
+
+
 		hint = null;
-		
+
 		//The clicked rectangle
 		int i = e.getY()/MYGUI.Square_Length;
 		int j =e.getX()/MYGUI.Square_Length;
 		int player ;
-		
-		
+
+
 		boolean flag=false;
 
 		//To catch some bugs
-           if(j==8)
-              { j=7;}
-           
-           
+		if(j==8)
+		{ j=7;}
+
+
 		if (board.get(i,j) ==0)
 		{
-         
+
 			//Which ones turn is it?
 			if(counter%2==0)
 				player=1 ;
 			else
 				player=-1;
 
-			
+
 			ArrayList<Point> points = board.possibleMoves(player);
 
 			//If the one playing has moves
@@ -371,33 +411,33 @@ class GPanel extends JPanel implements MouseListener {
 
 				if(flag)
 				{
-					
+
 					board.saveBoard(board);
-	
-					
+
+
 					board.set(i, j, counter++);
-					
+
 					repaint();
 
 					javax.swing.SwingUtilities.invokeLater(new Runnable() {
 						public void run() {	
 							Cursor savedCursor = getCursor();
-							
+
 							try {
 								Thread.sleep(500);
-								} catch (InterruptedException e) {
+							} catch (InterruptedException e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
 							setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 							pcturn();
-						
+
 							repaint();
 							setCursor(savedCursor);		
 						}
 					});
-					
-					}
+
+				}
 				//clicking a move that doent exist
 				else 
 				{
@@ -417,8 +457,15 @@ class GPanel extends JPanel implements MouseListener {
 
 		board.ComputeScor();
 
-		score_black.setText("Black : "+Integer.toString(board.getCounter(1)));
-		score_white.setText("White : "+Integer.toString(board.getCounter(0)));
+
+		if(board.getCounter(1) > board.getCounter(0))
+		{
+			score_black.setText("Black : "+Integer.toString(board.getCounter(1))+" \u2666");
+			score_white.setText("White : "+Integer.toString(board.getCounter(0))+" ");
+		}else if(board.getCounter(1) < board.getCounter(0)){
+			score_white.setText("White : "+Integer.toString(board.getCounter(0))+" \u2666 ");
+			score_black.setText("Black : "+Integer.toString(board.getCounter(1)));
+		}
 
 	}
 
@@ -439,7 +486,7 @@ class GPanel extends JPanel implements MouseListener {
 
 	}
 
-	public void mousePressed(MouseEvent event) {
+	public void mouseClicked(MouseEvent event) {
 		// TODO Auto-generated method stub
 
 	}
@@ -461,8 +508,8 @@ public class MYGUI extends JFrame  implements ActionListener {
 	JEditorPane editorPane;
 	static JMenuItem hint,repaint;
 	protected static final int Square_Length = 70; // length in pixel of a square 
-	protected static final int  Width = 8 * Square_Length; // Width
-	protected static final int  Height = 8 * Square_Length; // height
+	protected static final int  Width = 8* Square_Length ; // Width
+	protected static final int  Height = 8 * Square_Length ; // height
 
 	protected Othello oth;
 	protected static GPanel gpanel;
@@ -472,8 +519,8 @@ public class MYGUI extends JFrame  implements ActionListener {
 		setTitle("Othello"); 
 		drawFrame();
 
-		score_white=new JLabel("White : 2"); // the game starts with 2 white pieces
-		score_white.setForeground(Color.red);
+		score_white=new JLabel("White : 2 "); // the game starts with 2 white pieces
+		score_white.setForeground(Color.white);
 		score_white.setFont(new Font("Dialog", Font.BOLD, 16));
 		score_black=new JLabel("Black : 2"); // the game starts with 2 black pieces
 		score_black.setForeground(Color.black);
@@ -485,18 +532,18 @@ public class MYGUI extends JFrame  implements ActionListener {
 
 		JPanel status = new JPanel();
 		status.setLayout(new BorderLayout());
-
+		status.setBackground(new Color(0x25, 0xa3, 0x6f));
 		status.add(score_white, BorderLayout.EAST);
 		status.add(score_black, BorderLayout.WEST);
-
+       
 		JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, gpanel, status);
 		splitPane.setOneTouchExpandable(false);
 		getContentPane().add(splitPane);
+		
 		pack();
 
-		
+
 		setResizable(false);
-		
 		setVisible(true); 
 		setLocationRelativeTo(null);
 
@@ -519,74 +566,83 @@ public class MYGUI extends JFrame  implements ActionListener {
 
 		setJMenuBar(menuBar);	
 	}
-	
+
 	protected JMenu settingsMenu() {
 		JMenu settings = new JMenu("Settings");
 		JMenuItem undo = new JMenuItem("Undo");
 		hint = new JMenuItem("Hint");
 
-		
-			// undo button
-				undo.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						
-						if(!(oth.getCounter(1)==2 && oth.getCounter(0)==2))
-						{ 	
-							oth.Undo();
-						
-							if(gpanel.getPC()==1)
-								gpanel.setCounter(1);
-							else if (gpanel.getPC()==-1)
-								gpanel.setCounter(0);
-							
-							score_black.setText("Black : "+Integer.toString(oth.getCounter(1)));
-							score_white.setText("White : "+Integer.toString(oth.getCounter(0)));
-							
-							repaint();
-						}
-					}});
 
-		
-				//hint button
-				hint.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) { 
-						ArrayList<Point> moves;
-						if (GPanel.getcounter()%2==0)
-							moves=oth.possibleMoves(1);//white
-						else
-							moves=oth.possibleMoves(-1);//black
+		// undo button
+		undo.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
 
+				if(!(oth.getCounter(1)==2 && oth.getCounter(0)==2))
+				{ 	
+					oth.Undo();
 
-						for(int i=0;i<moves.size();i++)
-						{
+					if(gpanel.getPC()==1)
+						gpanel.setCounter(1);
+					else if (gpanel.getPC()==-1)
+						gpanel.setCounter(0);
 
-							gpanel.setHint(moves.get(i).getRow(), moves.get(i).getCol());
-							repaint();
-						}
-
-					}
-				});
 				
-				settings.add(hint);
-				settings.addSeparator();
-				settings.add(undo);
-		
-		
-		
+					
+					//who is winning?Show it with a diamond
+					if(oth.getCounter(1) > oth.getCounter(0))
+					{
+						score_black.setText("Black : "+Integer.toString(oth.getCounter(1))+" \u2666");
+						score_white.setText("White : "+Integer.toString(oth.getCounter(0))+" ");
+					}else if(oth.getCounter(1) < oth.getCounter(0)){
+						score_white.setText("White : "+Integer.toString(oth.getCounter(0))+" \u2666 ");
+						score_black.setText("Black : "+Integer.toString(oth.getCounter(1)));
+					}
+
+					repaint();
+				}
+			}});
+
+
+		//hint button
+		hint.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) { 
+				ArrayList<Point> moves;
+				if (GPanel.getcounter()%2==0)
+					moves=oth.possibleMoves(1);//white
+				else
+					moves=oth.possibleMoves(-1);//black
+
+
+				for(int i=0;i<moves.size();i++)
+				{
+
+					gpanel.setHint(moves.get(i).getRow(), moves.get(i).getCol());
+					repaint();
+				}
+
+			}
+		});
+
+		settings.add(hint);
+		settings.addSeparator();
+		settings.add(undo);
+
+
+
 		return settings;
 	}
 
 	protected JMenu buildMenu() {
 		JMenu game = new JMenu("Game");
-		
+
 		JMenuItem New = new JMenuItem("New Game");
 		JMenuItem Depth = new JMenuItem("Set Game Depth");
 		JMenuItem quit = new JMenuItem("Quit");
-		
 
-		
-		
-		
+
+
+
+
 		// new button
 		New.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -619,7 +675,7 @@ public class MYGUI extends JFrame  implements ActionListener {
 				}
 
 			}});
-		
+
 
 
 		game.add(New);	
@@ -628,8 +684,8 @@ public class MYGUI extends JFrame  implements ActionListener {
 		game.addSeparator();
 		game.add(quit);
 
-	
-		
+
+
 		return game;
 
 	}
